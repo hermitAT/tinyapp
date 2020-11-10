@@ -29,20 +29,32 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
+// REDIRECT USER TO LONGURL FROM THE SHORTURL ON THIS PAGE
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+// ADD NEW URLs
 app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = req.body.longURL; // save the shortURL-longURL pair to the database when it recieves a post request
   res.redirect(`/urls/${newShortURL}`); // redirect to new shortURL, created by random string generator
+});
+
+
+// DELETE URLs
+app.post("/urls/:shortURL/delete", (req, res) => {
+  
+  delete urlDatabase[req.params.shortURL];
+
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {

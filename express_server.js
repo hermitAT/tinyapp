@@ -29,7 +29,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-
+// SHOW USER THE SHORTURL, LONGURL
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
@@ -46,6 +46,14 @@ app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = req.body.longURL; // save the shortURL-longURL pair to the database when it recieves a post request
   res.redirect(`/urls/${newShortURL}`); // redirect to new shortURL, created by random string generator
+});
+
+// EDIT URLS
+app.post("/urls/:shortURL", (req, res) => {
+  
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+
+  res.redirect("/urls");
 });
 
 

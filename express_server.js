@@ -14,9 +14,27 @@ const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substr(2, 6);
 };
 
+const getUserID = (cookie, users) => {
+  let foundUser;
+  for (const user in users) {
+    if (user.id === cookie) {
+      foundUser = users[user];
+    }
+  }
+  return foundUser;
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  "p0k3m4": {
+    id: "p0k3m4",
+    email: "pokeguy@gmail.com",
+    password: "poke123"
+  }
 };
 
 // ^^ above code is middleware, requirements, or functions/constants set for use within the app
@@ -29,15 +47,18 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: getUserID(req.cookies["user_id"], users)
   };
+  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
 // render the form to add a new short-longURL value pair to our database
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
-  res.render("urls_new");
+  const templateVars = {
+    user: getUserID(req.cookies["user_id"], users)
+  };
+  res.render("urls_new", templateVars);
 });
 
 // show user the data for their short/longURL value pair, also contains form to edit the data or redirect to the original longURL
@@ -45,7 +66,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    user: getUserID(req.cookies["user_id"], users)
   };
   res.render("urls_show", templateVars);
 });
@@ -56,15 +77,33 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+// render page for user registration
+app.get("/register", (req, res) => {
+  res.render("registration");
+});
+
+// handle a post to register a new user
+app.post("/register", (req, res) => {
+  const newUserID = generateRandomString();
+  users[newUserID] = {
+    id: newUserID,
+    email: req.body.email,
+    password: req.body.password
+  };
+
+  res.cookie('user_id', newUserID);
+  res.redirect("/urls");
+});
+
 // handle a post to /login the user
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.user_id);
   res.redirect('/urls');
 });
 
 // handle a post to /logout the user
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -87,7 +126,6 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
-
 
 // app is listening...
 app.listen(PORT, () => {

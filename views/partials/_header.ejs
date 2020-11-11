@@ -10,11 +10,12 @@
         <button type="submit" class="btn btn-warning">Register</button>
       </a>
       <a href="/login">
-        <button type="submit" class="btn btn-warning">Login</button>
+        <button type="submit" class="btn btn-success">Login</button>
       </a>
       <% } else { %>
-      <form action="/logout" method="POST">
-        <button type="submit" class="btn btn-warning">LogOut</button>
+      <form class="form-inline" action="/logout" method="POST">
+        <a class="navbar-brand">Logged in: <%= user.email %></a>
+        <button type="submit" class="btn btn-danger">Logout</button>
       </form>
       <% } %>
     </div>

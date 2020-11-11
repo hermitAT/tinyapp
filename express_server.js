@@ -33,6 +33,25 @@ const emailLookup = (email, users) => {
   return false;
 };
 
+const passwordLookup = (password, users) => {
+  for (const user in users) {
+    if (password === users[user].password) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const userIDLookup = (users, email, password) => {
+  let foundID;
+  for (const user in users) {
+    if (email === users[user].email && password === users[user].password) {
+      foundID = users[user].id;
+    }
+  }
+  return foundID;
+};
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -98,10 +117,10 @@ app.get("/register", (req, res) => {
 // handle a post to register a new user
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
-    res.status(400).send("Status Code 400, invalid entry!");
+    res.status(400).send("Status Code 400, Bad Request - Invalid entry!");
   }
   if (emailLookup(req.body.email, users)) {
-    res.status(400).send("Status Code 400, there is a user registered to that email!");
+    res.status(400).send("Status Code 400, Bad Request - There is a user registered to that email!");
   } else {
     const newUserID = generateRandomString();
     users[newUserID] = {
@@ -117,8 +136,14 @@ app.post("/register", (req, res) => {
 
 // handle a post to /login the user
 app.post("/login", (req, res) => {
-  res.cookie('user_id', req.body.user_id);
-  res.redirect('/urls');
+  if (!emailLookup(req.body.email, users)) {
+    res.status(403).send("Status Code 403, Access Forbidden ! ");
+  } else if (!passwordLookup(req.body.password, users)) {
+    res.status(403).send("Status Code 403, Access Forbidden ! ");
+  } else {
+    res.cookie('user_id', userIDLookup(users, req.body.email, req.body.password));
+    res.redirect('/urls');
+  }
 });
 
 // handle a post to /logout the user

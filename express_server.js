@@ -85,6 +85,11 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+// renger page for user login
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
 // render page for user registration
 app.get("/register", (req, res) => {
   res.render("registration");

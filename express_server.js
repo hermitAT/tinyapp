@@ -20,7 +20,6 @@ const urlDatabase = {
 };
 
 // ^^ above code is middleware, requirements, or functions/constants set for use within the app
-
 // create a .json file containing our key-value pairs within the urlDatabase
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);

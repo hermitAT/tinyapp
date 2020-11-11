@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substr(2, 6);
@@ -22,6 +22,15 @@ const getUserID = (cookie, users) => {
     }
   }
   return foundUser;
+};
+
+const emailLookup = (email, users) => {
+  for (const user in users) {
+    if (email === users[user].email) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const urlDatabase = {
@@ -83,15 +92,22 @@ app.get("/register", (req, res) => {
 
 // handle a post to register a new user
 app.post("/register", (req, res) => {
-  const newUserID = generateRandomString();
-  users[newUserID] = {
-    id: newUserID,
-    email: req.body.email,
-    password: req.body.password
-  };
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Status Code 400, invalid entry!");
+  }
+  if (emailLookup(req.body.email, users)) {
+    res.status(400).send("Status Code 400, there is a user registered to that email!");
+  } else {
+    const newUserID = generateRandomString();
+    users[newUserID] = {
+      id: newUserID,
+      email: req.body.email,
+      password: req.body.password
+    };
 
-  res.cookie('user_id', newUserID);
-  res.redirect("/urls");
+    res.cookie('user_id', newUserID);
+    res.redirect("/urls");
+  }
 });
 
 // handle a post to /login the user

@@ -17,7 +17,7 @@ const generateRandomString = () => {
 const getUserID = (cookie, users) => {
   let foundUser;
   for (const user in users) {
-    if (user.id === cookie) {
+    if (users[user].id === cookie) {
       foundUser = users[user];
     }
   }
@@ -47,16 +47,15 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: getUserID(req.cookies["user_id"], users)
+    user: getUserID(req.cookies.user_id, users)
   };
-  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
 // render the form to add a new short-longURL value pair to our database
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    user: getUserID(req.cookies["user_id"], users)
+    user: getUserID(req.cookies.user_id, users)
   };
   res.render("urls_new", templateVars);
 });
@@ -66,7 +65,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    user: getUserID(req.cookies["user_id"], users)
+    user: getUserID(req.cookies.user_id, users)
   };
   res.render("urls_show", templateVars);
 });

@@ -1,15 +1,19 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
-const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-files");
+const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-functions");
 
 const PORT = 8080; // default port 8080
 
 const app = express();
 app.use(morgan('dev'));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1']
+}
+));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
@@ -25,15 +29,15 @@ app.get("/urls.json", (req, res) => {
 // render the template for our urls homepage, using the urlDatabase
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlsForUser(req.cookies.user_id),
-    user: getUserID(req.cookies.user_id, users)
+    urls: urlsForUser(req.session.userID, urlDatabase),
+    user: getUserID(req.session.userID, users)
   };
   res.render("urls_index", templateVars);
 });
 
 // render the form to add a new short-longURL value pair to our database
 app.get("/urls/new", (req, res) => {
-  const user = getUserID(req.cookies.user_id, users);
+  const user = getUserID(req.session.userID, users);
   const templateVars = {
     user
   };
@@ -49,7 +53,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longURL,
-    user: getUserID(req.cookies.user_id, users)
+    user: getUserID(req.session.userID, users)
   };
   res.render("urls_show", templateVars);
 });
@@ -74,42 +78,44 @@ app.get("/register", (req, res) => {
 
 // handle a post to register a new user
 app.post("/register", (req, res) => {
-  if (req.body.email === "" || req.body.password === "") {
+  const { email, password } = req.body;
+
+  if (email === "" || password === "") {
     res.status(400).send('<h2>Sorry, please confirm both fields have been entered correctly!</h2>' + '<img src="https://http.cat/400" alt="STATUS CODE 400 CAT" style="height:500px;width:600px;"/>');
   }
-  const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
 
-  if (emailLookup(req.body.email, users)) {
+  if (emailLookup(email, users)) {
     res.status(400).send('<h2>Sorry, that email is already in use!</h2>' + '<img src="https://http.cat/400" alt="STATUS CODE 400 CAT" style="height:500px;width:600px;"/>');
   } else {
     const newUserID = generateRandomString();
     users[newUserID] = {
       id: newUserID,
-      email: req.body.email,
+      email: email,
       password: hashedPassword
     };
-    res.cookie('user_id', newUserID);
+    req.session.userID = newUserID;
     res.redirect("/urls");
   }
 });
 
 // handle a post to /login the user
 app.post("/login", (req, res) => {
-  if (!emailLookup(req.body.email, users)) {
+  const { email, password } = req.body;
+
+  if (!emailLookup(email, users)) {
     res.status(403).send('<h2>Sorry, we couldn\'t find that email within our database...</h2>' + '<img src="https://http.cat/403" alt="STATUS CODE 403 CAT" style="height:500px;width:600px;"/>');
-  } else if (!passwordLookup(req.body.password, users)) {
+  } else if (!passwordLookup(password, users, emailLookup(email, users))) {
     res.status(403).send('<h2>Sorry, the password entered did not match!</h2>' + '<img src="https://http.cat/403" alt="STATUS CODE 403 CAT" style="height:500px;width:600px;"/>');
   } else {
-    console.log(users);
-    res.cookie('user_id', userIDLookup(users, req.body.email, req.body.password));
+    req.session.userID = userIDLookup(users, email, password);
     res.redirect('/urls');
   }
 });
 
 // handle a post to /logout the user
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -120,14 +126,14 @@ app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = {
     longURL: req.body.longURL,
-    userID: req.cookies.user_id
+    userID: req.session.userID
   };
   res.redirect(`/urls/${newShortURL}`);
 });
 
 // EDIT URLS
 app.post("/urls/:shortURL", (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+  if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
     res.status(401).send('<h2>Sorry, you cannot edit another user\'s URLs!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
   } else {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
@@ -138,7 +144,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 // DELETE URLs
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+  if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
     res.status(401).send('<h2>Sorry, you cannot delete another user\'s URLS!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
   } else {
     delete urlDatabase[req.params.shortURL];

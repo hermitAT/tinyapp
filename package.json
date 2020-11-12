@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "./node_modules/.bin/nodemon -L express_server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "repository": {
     "type": "git",
@@ -19,13 +19,15 @@
   },
   "homepage": "https://github.com/hermitAT/tinyapp#readme",
   "dependencies": {
-    "bcrypt": "2.0.0",
-    "cookie-parser": "^1.4.5",
+    "bcrypt": "^5.0.0",
+    "cookie-session": "^1.4.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1",
     "nodemon": "^2.0.6"
   }
 }

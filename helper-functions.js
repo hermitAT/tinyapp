@@ -5,51 +5,45 @@ const generateRandomString = () => {
 };
 
 const getUserID = (cookie, users) => {
-  let foundUser;
   for (const user in users) {
     if (users[user].id === cookie) {
-      foundUser = users[user];
+      return users[user];
     }
   }
-  return foundUser;
 };
 
 const emailLookup = (email, users) => {
   for (const user in users) {
     if (email === users[user].email) {
-      return true;
+      return user;
     }
   }
-  return false;
 };
 
-const passwordLookup = (subPassword, users) => {
-  for (const user in users) {
-    if (bcrypt.compareSync(subPassword, users[user].password)) {
+const passwordLookup = (subPassword, users, user) => {
+  for (const item in users) {
+    if (item === user && bcrypt.compareSync(subPassword, users[item].password)) {
       return true;
     }
   }
-  return false;
 };
 
 const userIDLookup = (users, email, subPassword) => {
-  let foundID;
   for (const user in users) {
     if (email === users[user].email && bcrypt.compareSync(subPassword, users[user].password)) {
-      foundID = users[user].id;
+      return users[user].id;
     }
   }
-  return foundID;
 };
 
-const urlsForUser = (id) => {
-  let myUrls = {};
+const urlsForUser = (id, database) => {
+  const myUrls = {};
   if (!id) {
     return false;
   }
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      myUrls[url] = urlDatabase[url];
+  for (const url in database) {
+    if (database[url].userID === id) {
+      myUrls[url] = database[url];
     }
   }
   return myUrls;

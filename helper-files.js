@@ -40,6 +40,19 @@ const userIDLookup = (users, email, password) => {
   return foundID;
 };
 
+const urlsForUser = (id) => {
+  let myUrls = {};
+  if (!id) {
+    return false;
+  }
+  for (const url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      myUrls[url] = urlDatabase[url];
+    }
+  }
+  return myUrls;
+};
+
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "p0k3m4" },
   "9sm5xK": { longURL: "http://www.google.com", userID: "p0k3m4" }
@@ -59,6 +72,7 @@ module.exports = {
   emailLookup,
   passwordLookup,
   userIDLookup,
+  urlsForUser,
   urlDatabase,
   users
 };

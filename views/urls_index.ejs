@@ -9,6 +9,9 @@
   <body>
     <%- include('partials/_header') %>
     <main style="margin: 1em;">
+      <% if (!urls) { %>
+        <h6>Please login or register!</h6>
+      <% } else { %>
       <h3>tinyURLs</h3>
       <table class="table">
         <thead>
@@ -38,6 +41,7 @@
           <% } %>
         </tbody>
       </table>
+      <% } %>
     </main>
   </body>
 </html>

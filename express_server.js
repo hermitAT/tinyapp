@@ -1,7 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
-const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlDatabase, users } = require("./helper-files");
+const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-files");
 
 const PORT = 8080; // default port 8080
 
@@ -20,7 +20,7 @@ app.get("/urls.json", (req, res) => {
 // render the template for our urls homepage, using the urlDatabase
 app.get("/urls", (req, res) => {
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(req.cookies.user_id),
     user: getUserID(req.cookies.user_id, users)
   };
   res.render("urls_index", templateVars);
@@ -109,25 +109,31 @@ app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = {
     longURL: req.body.longURL,
-    userIDL: req.cookies.user_id
+    userID: req.cookies.user_id
   };
   res.redirect(`/urls/${newShortURL}`);
 });
 
 // EDIT URLS
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = {
-    longURL: req.body.longURL,
-    userID: req.cookies.user_id
-  };
-  res.redirect("/urls");
+
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+    res.status(401).send("Status Code 401, unauthorized to edit!");
+  } else {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    res.redirect("/urls");
+  }
 });
 
 
 // DELETE URLs
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
+    res.status(401).send("Status Code 401, unauthorized to delete!");
+  } else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
 });
 
 // app is listening...

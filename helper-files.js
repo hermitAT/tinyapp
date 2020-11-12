@@ -1,0 +1,64 @@
+const generateRandomString = () => {
+  return (Math.random() + 1).toString(36).substr(2, 6);
+};
+
+const getUserID = (cookie, users) => {
+  let foundUser;
+  for (const user in users) {
+    if (users[user].id === cookie) {
+      foundUser = users[user];
+    }
+  }
+  return foundUser;
+};
+
+const emailLookup = (email, users) => {
+  for (const user in users) {
+    if (email === users[user].email) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const passwordLookup = (password, users) => {
+  for (const user in users) {
+    if (password === users[user].password) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const userIDLookup = (users, email, password) => {
+  let foundID;
+  for (const user in users) {
+    if (email === users[user].email && password === users[user].password) {
+      foundID = users[user].id;
+    }
+  }
+  return foundID;
+};
+
+const urlDatabase = {
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "p0k3m4" },
+  "9sm5xK": { longURL: "http://www.google.com", userID: "p0k3m4" }
+};
+
+const users = {
+  "p0k3m4": {
+    id: "p0k3m4",
+    email: "pokeguy@gmail.com",
+    password: "poke123"
+  }
+};
+
+module.exports = {
+  generateRandomString,
+  getUserID,
+  emailLookup,
+  passwordLookup,
+  userIDLookup,
+  urlDatabase,
+  users
+};

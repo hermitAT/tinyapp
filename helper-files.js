@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 const generateRandomString = () => {
   return (Math.random() + 1).toString(36).substr(2, 6);
 };
@@ -21,19 +23,19 @@ const emailLookup = (email, users) => {
   return false;
 };
 
-const passwordLookup = (password, users) => {
+const passwordLookup = (subPassword, users) => {
   for (const user in users) {
-    if (password === users[user].password) {
+    if (bcrypt.compareSync(subPassword, users[user].password)) {
       return true;
     }
   }
   return false;
 };
 
-const userIDLookup = (users, email, password) => {
+const userIDLookup = (users, email, subPassword) => {
   let foundID;
   for (const user in users) {
-    if (email === users[user].email && password === users[user].password) {
+    if (email === users[user].email && bcrypt.compareSync(subPassword, users[user].password)) {
       foundID = users[user].id;
     }
   }
@@ -62,7 +64,7 @@ const users = {
   "p0k3m4": {
     id: "p0k3m4",
     email: "pokeguy@gmail.com",
-    password: "poke123"
+    password: bcrypt.hashSync("poke123", 10)
   }
 };
 

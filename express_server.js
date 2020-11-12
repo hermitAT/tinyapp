@@ -7,7 +7,6 @@ const PORT = 8080; // default port 8080
 
 const app = express();
 app.set("view engine", "ejs");
-
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 // ^^ above code is middleware, requirements, or functions/constants set for use within the app
@@ -32,7 +31,6 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user
   };
-
   if (!user) {
     res.redirect("/login");
   } else {
@@ -69,10 +67,10 @@ app.get("/register", (req, res) => {
 // handle a post to register a new user
 app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
-    res.status(400).send("Status Code 400, Bad Request - Invalid entry!");
+    res.status(400).send('<img src="https://http.cat/400" alt="STATUS CODE 400 CAT"/>');
   }
   if (emailLookup(req.body.email, users)) {
-    res.status(400).send("Status Code 400, Bad Request - There is a user registered to that email!");
+    res.status(400).send('<img src="https://http.cat/400" alt="STATUS CODE 400 CAT"/>');
   } else {
     const newUserID = generateRandomString();
     users[newUserID] = {
@@ -80,7 +78,6 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: req.body.password
     };
-
     res.cookie('user_id', newUserID);
     res.redirect("/urls");
   }
@@ -89,9 +86,9 @@ app.post("/register", (req, res) => {
 // handle a post to /login the user
 app.post("/login", (req, res) => {
   if (!emailLookup(req.body.email, users)) {
-    res.status(403).send("Status Code 403, Access Forbidden ! ");
+    res.status(403).send('<img src="https://http.cat/403" alt="STATUS CODE 403 CAT"/>');
   } else if (!passwordLookup(req.body.password, users)) {
-    res.status(403).send("Status Code 403, Access Forbidden ! ");
+    res.status(403).send('<img src="https://http.cat/403" alt="STATUS CODE 403 CAT"/>');
   } else {
     res.cookie('user_id', userIDLookup(users, req.body.email, req.body.password));
     res.redirect('/urls');
@@ -116,9 +113,8 @@ app.post("/urls", (req, res) => {
 
 // EDIT URLS
 app.post("/urls/:shortURL", (req, res) => {
-
   if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
-    res.status(401).send("Status Code 401, unauthorized to edit!");
+    res.status(401).send('<img src="https://http.cat/401" alt="STATUS CODE 401 CAT"/>');
   } else {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     res.redirect("/urls");
@@ -129,7 +125,7 @@ app.post("/urls/:shortURL", (req, res) => {
 // DELETE URLs
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.cookies.user_id) {
-    res.status(401).send("Status Code 401, unauthorized to delete!");
+    res.status(401).send('<img src="https://http.cat/401" alt="STATUS CODE 401 CAT"/>');
   } else {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
@@ -138,5 +134,5 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // app is listening...
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`tinyApp listening on port ${PORT}!`);
 });

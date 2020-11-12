@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-    <title>TinyApp</title>
+    <title>tinyApp</title>
   </head>
   <body>
     <%- include('partials/_header') %>
-    <main style="margin: 1em;">
+    <main style="margin: 1em; justify-content: center">
       <% if (!urls) { %>
-        <h6>Please login or register!</h6>
+        <h3>Please login or register to start shrinking some urls!</h3>
+        <img src="https://media.pocketmonsters.net/dex/moves/minimize.gif" alt="Minimize!" style="padding-top: 25px">
       <% } else { %>
       <h3>tinyURLs</h3>
       <table class="table">

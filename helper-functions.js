@@ -6,7 +6,7 @@ const generateRandomString = () => {
 };
 
 // return the user object associated with the user currently in session
-const getUserID = (cookie, users) => {
+const getUserFromID = (cookie, users) => {
   for (const user in users) {
     if (users[user].id === cookie) {
       return users[user];
@@ -64,7 +64,7 @@ const users = {};
 // export all below!
 module.exports = {
   generateRandomString,
-  getUserID,
+  getUserFromID,
   emailLookup,
   passwordLookup,
   userIDLookup,

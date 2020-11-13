@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
 const methodOverride = require('method-override');
-const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-functions");
+const { generateRandomString, getUserFromID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-functions");
 // ^^ requirements and modules ...
 
 const PORT = 8080;
@@ -42,24 +42,26 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlsForUser(req.session.userID, urlDatabase),
-    user: getUserID(req.session.userID, users)
+    user: getUserFromID(req.session.userID, users)
   };
   res.render("urls_index", templateVars);
 });
 
 // render the form to add a new short-longURL value pair to our database
 app.get("/urls/new", (req, res) => {
-  if (!getUserID(req.session.userID, users)) {
+  if (!getUserFromID(req.session.userID, users)) {
     res.redirect("/login");
   }
 
-  const { user } = getUserID(req.session.userID, users);
-  res.render("urls_new", { user });
+  const templateVars = {
+    user: getUserFromID(req.session.userID, users)
+  };
+  res.render("urls_new", templateVars);
 });
 
 // show user the data for their short/longURL value pair, also contains form to edit the data or redirect to the original longURL
 app.get("/urls/:shortURL", (req, res) => {
-  const user = getUserID(req.session.userID, users);
+  const user = getUserFromID(req.session.userID, users);
   if (!user) {
     res.redirect("/login");
   }

@@ -7,7 +7,7 @@ const methodOverride = require('method-override');
 const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-functions");
 // ^^ requirements and modules ...
 
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 
 const app = express();
 app.use(morgan('dev'));

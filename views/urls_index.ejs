@@ -10,15 +10,15 @@
     <%- include('partials/_header') %>
     <main style="margin: 1em; justify-content: center">
       <% if (!urls) { %>
-        <h3>Please login or register to start shrinking some urls!</h3>
+        <h3>Please login or register to start 'minimizing' some urls!</h3>
         <img src="https://media.pocketmonsters.net/dex/moves/minimize.gif" alt="Minimize!" style="padding-top: 25px">
       <% } else { %>
-      <h3>tinyURLs</h3>
+      <h3>myURLs</h3>
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">Short URL</th>
-            <th scope="col">Long URL</th>
+            <th scope="col">tinyURL</th>
+            <th scope="col">longURL</th>
             <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
@@ -34,7 +34,7 @@
                     </form>
                 </td>
                 <td>
-                    <form method="POST" action="/urls/<%= shortURL %>/delete">
+                    <form method="POST" action="/urls/<%= shortURL %>/delete?_method=DELETE">
                       <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </td>

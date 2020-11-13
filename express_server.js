@@ -3,20 +3,23 @@ const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 const { generateRandomString, getUserID, emailLookup, passwordLookup, userIDLookup, urlsForUser, urlDatabase, users } = require("./helper-functions");
+// ^^ requirements and modules ...
 
 const PORT = 8080; // default port 8080
 
 const app = express();
 app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: 'session',
   keys: ['key1']
-}
-));
-app.use(bodyParser.urlencoded({ extended: true }));
+}));
+app.use(methodOverride('_method'));
 
 app.set("view engine", "ejs");
+
 // ^^ above code is middleware, requirements, or functions/constants set for use within the app ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~ RENDER / REDIRECT URL TEMPLATE ROUTES ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,6 +27,15 @@ app.set("view engine", "ejs");
 // create a .json file containing our key-value pairs within the urlDatabase
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+// redirect user to /urls or /login page, whether or not there are already logged into the app
+app.get("/", (req, res) => {
+  if (req.session.userID) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // render the template for our urls homepage, using the urlDatabase
@@ -37,25 +49,34 @@ app.get("/urls", (req, res) => {
 
 // render the form to add a new short-longURL value pair to our database
 app.get("/urls/new", (req, res) => {
-  const user = getUserID(req.session.userID, users);
-  const templateVars = {
-    user
-  };
-  if (!user) {
+  if (!getUserID(req.session.userID, users)) {
     res.redirect("/login");
-  } else {
-    res.render("urls_new", templateVars);
   }
+
+  const { user } = getUserID(req.session.userID, users);
+  res.render("urls_new", { user });
 });
 
 // show user the data for their short/longURL value pair, also contains form to edit the data or redirect to the original longURL
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: getUserID(req.session.userID, users)
-  };
-  res.render("urls_show", templateVars);
+  const user = getUserID(req.session.userID, users);
+  if (!user) {
+    res.redirect("/login");
+  }
+  
+  const shortURL = req.params.shortURL;
+  console.log(shortURL);
+  for (const url in urlDatabase) {
+    if (url === shortURL) {
+      const templateVars = {
+        shortURL,
+        longURL: urlDatabase[shortURL].longURL,
+        user,
+      };
+      res.render("urls_show", templateVars);
+    }
+  }
+  res.status(404).send('<h2>Sorry, we can\'t find that URL in our database...</h2>' + '<img src="https://http.cat/404" alt="STATUS CODE 404 CAT" style="height:500px;width:600px;"/>');
 });
 
 // redirect user to the longURL stored within the shortURL
@@ -123,6 +144,9 @@ app.post("/logout", (req, res) => {
 
 // ADD NEW URLs
 app.post("/urls", (req, res) => {
+  if (!req.session.userID) {
+    res.status(401).send('<h2>Sorry, please login before trying that!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
+  }
   const newShortURL = generateRandomString();
   urlDatabase[newShortURL] = {
     longURL: req.body.longURL,
@@ -132,7 +156,11 @@ app.post("/urls", (req, res) => {
 });
 
 // EDIT URLS
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
+  if (!req.session.userID) {
+    res.status(401).send('<h2>Sorry, please login before trying that!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
+  }
+
   if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
     res.status(401).send('<h2>Sorry, you cannot edit another user\'s URLs!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
   } else {
@@ -143,7 +171,7 @@ app.post("/urls/:shortURL", (req, res) => {
 
 
 // DELETE URLs
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL/delete", (req, res) => {
   if (urlDatabase[req.params.shortURL].userID !== req.session.userID) {
     res.status(401).send('<h2>Sorry, you cannot delete another user\'s URLS!</h2>' + '<img src="https://http.cat/401" alt="STATUS CODE 401 CAT" style="height:500px;width:600px;"/>');
   } else {

@@ -49,18 +49,9 @@ const urlsForUser = (id, database) => {
   return myUrls;
 };
 
-const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", userID: "p0k3m4" },
-  "9sm5xK": { longURL: "http://www.google.com", userID: "p0k3m4" }
-};
+const urlDatabase = {};
 
-const users = {
-  "p0k3m4": {
-    id: "p0k3m4",
-    email: "pokeguy@gmail.com",
-    password: bcrypt.hashSync("poke123", 10)
-  }
-};
+const users = {};
 
 module.exports = {
   generateRandomString,
